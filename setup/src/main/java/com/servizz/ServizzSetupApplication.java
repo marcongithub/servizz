@@ -1,9 +1,8 @@
 package com.servizz;
 
 
-import com.servizz.core.offer.ServiceRequest;
-import com.servizz.core.offer.ServiceRequestRepository;
-import com.servizz.core.offer.ServiceType;
+import com.servizz.core.service.ServiceRequest;
+import com.servizz.core.service.ServiceRequestRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +11,7 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
+import java.time.LocalDate;
 import java.util.Date;
 
 
@@ -40,14 +40,14 @@ public class ServizzSetupApplication implements CommandLineRunner {
         relocationServiceRequest.setDateFrom(new Date());
         relocationServiceRequest.setDateTo(new Date());
         relocationServiceRequest.setDescription("Umzug von der Boschetsrieder Straße nach Bernried a. S.");
-        relocationServiceRequest.setServiceType(ServiceType.ServiceSpecification.NATIONAL_RELOCATION);
+        relocationServiceRequest.setServiceType(ServiceRequest.ServiceSpecification.NATIONAL_RELOCATION);
         serviceRequestRepository.save(relocationServiceRequest);
         //garden cleaning
         ServiceRequest gardenCleaningServiceRequest = new ServiceRequest();
         gardenCleaningServiceRequest.setDateFrom(new Date());
         gardenCleaningServiceRequest.setDateTo(new Date());
         gardenCleaningServiceRequest.setDescription("Vorgarten aufräumen");
-        gardenCleaningServiceRequest.setServiceType(ServiceType.ServiceSpecification.GARDEN_CLEANING);
+        gardenCleaningServiceRequest.setServiceType(ServiceRequest.ServiceSpecification.GARDEN_CLEANING);
         serviceRequestRepository.save(gardenCleaningServiceRequest);
     }
 }
