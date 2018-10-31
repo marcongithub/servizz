@@ -28,4 +28,7 @@ public interface ServiceRequestRepository extends JpaRepository<ServiceRequest, 
      */
     @Query("select s from  ServiceRequest s where CURRENT_DATE between s.dateFrom and s.dateTo")
     List<ServiceRequest> findCurrent();
+
+
+    List<ServiceRequest> findAllByServiceType(ServiceRequest.ServiceSpecification serviceType);
 }

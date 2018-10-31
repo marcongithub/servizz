@@ -11,7 +11,6 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-import java.time.LocalDate;
 import java.util.Date;
 
 
@@ -19,9 +18,10 @@ import java.util.Date;
 @SpringBootApplication
 public class ServizzSetupApplication implements CommandLineRunner {
 
+    private final Logger logger = LoggerFactory.getLogger(ServizzSetupApplication.class);
+    @SuppressWarnings("SpringJavaAutowiredFieldsWarningInspection")
     @Autowired
     ServiceRequestRepository serviceRequestRepository;
-    private Logger logger = LoggerFactory.getLogger(ServizzSetupApplication.class);
     @Value("${application.name}")
     private String appName;
 
@@ -29,7 +29,7 @@ public class ServizzSetupApplication implements CommandLineRunner {
         SpringApplication.run(ServizzSetupApplication.class, args);
     }
 
-    public void run(String... args) throws Exception {
+    public void run(String... args) {
         logger.info("STARTING SETUP FOR " + appName + " ...");
         initServiceRequestTable();
     }

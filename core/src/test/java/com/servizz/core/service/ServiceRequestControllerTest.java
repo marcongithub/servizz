@@ -10,29 +10,27 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.json.JacksonTester;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 import java.util.Optional;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.servizz.core.service.ServiceRequestTestProvider.getDefaultServiceRequest;
+import static com.servizz.core.service.ServiceRequestTestProvider.serviceRequestsOfOneYear;
 import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.equalTo;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Matchers.any;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
-import static com.servizz.core.service.ServiceRequestTestProvider.*;
 
 
 @RunWith(SpringRunner.class)
@@ -47,6 +45,8 @@ public class ServiceRequestControllerTest {
 
     private JacksonTester<ServiceRequest> jsonServiceRequest;
 
+    private JacksonTester<List<ServiceRequest>> jsonServiceRequestList;
+
     @Before
     public void setup() {
         JacksonTester.initFields(this, new ObjectMapper());
@@ -56,25 +56,22 @@ public class ServiceRequestControllerTest {
     public void printAsJsonString() throws IOException {
         ServiceRequest serviceRequest = getDefaultServiceRequest();
         String jsonRequest = jsonServiceRequest.write(serviceRequest).getJson();
-        System.out.println("" + jsonRequest);
+
+        List<ServiceRequest> serviceRequestsOfOneYear = serviceRequestsOfOneYear();
+        String jsonList = jsonServiceRequestList.write(serviceRequestsOfOneYear).getJson();
     }
 
     @Test
     public void serviceRequestFound() throws Exception {
-        ServiceRequest expected = new ServiceRequest("mocked description");
+        ServiceRequest serviceRequestExpected = new ServiceRequest("mocked description");
+        String serviceRequestExpectedJson = jsonServiceRequest.write(serviceRequestExpected).getJson();
         //given
-        given(serviceRequestRepository.findById(anyLong())).willReturn(Optional.of(expected));
+        given(serviceRequestRepository.findById(anyLong())).willReturn(Optional.of(serviceRequestExpected));
         //when
-        MockHttpServletRequestBuilder requestBuilder = get("/services/{serviceId}", Long.valueOf(1));
+        MockHttpServletRequestBuilder requestBuilder = get("/services/{serviceId}", 1L);
         ResultActions resultActions = mvc.perform(requestBuilder.accept(MediaType.APPLICATION_JSON));
         //then
-        //assertion with hamcrest
-        resultActions.andExpect(status().isOk()).andExpect(content().string(equalTo(jsonServiceRequest.write(expected).getJson())));
-        // assertion with assertJ
-        MockHttpServletResponse response = resultActions.andReturn().getResponse();
-        assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
-        assertThat(response.getContentAsString()).isEqualTo(jsonServiceRequest.write(expected).getJson());
-
+        resultActions.andExpect(status().isOk()).andExpect(content().json(serviceRequestExpectedJson));
     }
 
     @Test
@@ -83,7 +80,7 @@ public class ServiceRequestControllerTest {
         //given
         given(serviceRequestRepository.findById(anyLong())).willReturn(Optional.empty());
         //when
-        MockHttpServletRequestBuilder requestBuilder = get("/services/{serviceId}", 1l);
+        MockHttpServletRequestBuilder requestBuilder = get("/services/{serviceId}", 1L);
 
         ResultActions resultActions = mvc.perform(requestBuilder.accept(MediaType.APPLICATION_JSON));
 
@@ -126,25 +123,61 @@ public class ServiceRequestControllerTest {
         mvc.perform(requestBuilder).andExpect(status().isNotFound()).andExpect(content().string(containsString(errorMsg)));
     }
 
-    //getByQuery tests
+    /*********** getByQuery tests ***************/
 
-    public void getServiceRequestsInRange(){
+    @Test
+    public void getServiceRequestsInRange() throws Exception {
+        List<ServiceRequest> serviceRequestsOfOneYear = serviceRequestsOfOneYear();
+        String serviceRequestsOfOneYearExpectedJson = jsonServiceRequestList.write(serviceRequestsOfOneYear).getJson();
+
+        given(serviceRequestRepository.findByDateFromGreaterThanEqualAndDateToLessThanEqual(any(Date.class), any(Date.class))).
+                willReturn(serviceRequestsOfOneYear);
+        ResultActions resultActions = mvc.perform(get("/services").
+                param("date-from", "12.10.2018").param("date-to", "13.10.2018"));
+        resultActions.andExpect(status().isOk()).andExpect(content().json(serviceRequestsOfOneYearExpectedJson));
+    }
+
+    @Test
+    public void getCurrentServiceRequests() throws Exception {
+        List<ServiceRequest> currentServiceRequests = Collections.singletonList(getDefaultServiceRequest());
+        String currentServiceRequestsJson = jsonServiceRequestList.write(currentServiceRequests).getJson();
+
+        given(serviceRequestRepository.findCurrent()).willReturn(currentServiceRequests);
+        ResultActions resultActions = mvc.perform(get("/services"));
+        resultActions.andExpect(status().isOk()).andExpect(content().json(currentServiceRequestsJson));
+    }
+
+    @Test
+    public void getServiceRequestsBySpec() throws Exception {
+        ServiceRequest paintingRequest = getDefaultServiceRequest();
+        paintingRequest.setServiceType(ServiceRequest.ServiceSpecification.PAINTING);
+        List<ServiceRequest> paintingRequests = Collections.singletonList(paintingRequest);
+        String paintingRequestsJson = jsonServiceRequestList.write(paintingRequests).getJson();
+
+        given(serviceRequestRepository.findAllByServiceType(any(ServiceRequest.ServiceSpecification.class))).willReturn(paintingRequests);
+
+        ResultActions resultActions = mvc.perform(get("/services").param("service-spec", ServiceRequest.ServiceSpecification.PAINTING.name()));
+        resultActions.andExpect(status().isOk()).andExpect(content().json(paintingRequestsJson));
 
     }
 
-    public void getCurrentServiceRequests(){
-
+    @Test
+    public void getWithoutDateFrom() throws Exception {
+        ResultActions resultActions = mvc.perform(get("/services").
+                param("date-to", "01.01.2011"));
+        resultActions.andExpect(status().isBadRequest());
     }
 
-    public void getWithoutDateFrom(){
-
+    @Test
+    public void getWithoutDateTo() throws Exception {
+        ResultActions resultActions = mvc.perform(get("/services").
+                param("date-from", "01.02.2013"));
+        resultActions.andExpect(status().isBadRequest());
     }
 
-    public void getWithoutDateTo(){
-
-    }
-
-    public void getReturnsEmptyList(){
+    //TODO find out how to test empty json list result
+    @Test
+    public void getReturnsEmptyList() {
 
     }
 

@@ -43,7 +43,7 @@ public class SRCwithoutServerWithH2Test {
     @Test
     public void load() throws Exception {
 
-        RequestBuilder requestBuilder = get("/services/{serviceId}", Long.valueOf(serviceRequestId));
+        RequestBuilder requestBuilder = get("/services/{serviceId}", serviceRequestId);
 
         MockHttpServletResponse response =
                 mockMvc.perform(requestBuilder).andReturn().getResponse();

@@ -1,6 +1,7 @@
 package com.servizz.core.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,8 +19,13 @@ public class ServiceRequestController {
     public static final String SERVICE_QUALIFIER_GET = "GET SERVICE-REQUEST";
     public static final String SERVICE_QUALIFIER_UPDATE = "UPDATE SERVICE-REQUEST";
 
+
+    private final ServiceRequestRepository serviceRequestRepository;
+
     @Autowired
-    private ServiceRequestRepository serviceRequestRepository;
+    public ServiceRequestController(ServiceRequestRepository serviceRequestRepository){
+        this.serviceRequestRepository = serviceRequestRepository;
+    }
 
 
     @GetMapping(value = "/{serviceId}")
@@ -53,13 +59,17 @@ public class ServiceRequestController {
      * @return the list of service requests or an empty list
      */
     @GetMapping
-    public List<ServiceRequest> getByQuery(@RequestParam(value = "date-from") Date dateFrom, @RequestParam(value = "date-to") Date dateTo) {
+    public List<ServiceRequest> getByQuery(@RequestParam(required = false, value = "date-from") @DateTimeFormat(pattern = "dd.MM.yyyy") Date dateFrom,
+                                           @RequestParam(required = false, value = "date-to") @DateTimeFormat(pattern = "dd.MM.yyyy") Date dateTo,
+                                           @RequestParam(required = false, value = "service-spec") ServiceRequest.ServiceSpecification serviceSpecification) {
         List<ServiceRequest> list;
-        if (dateFrom != null && dateTo != null) {
+        if (dateFrom != null && dateTo != null && serviceSpecification == null) {
             list = serviceRequestRepository.findByDateFromGreaterThanEqualAndDateToLessThanEqual(dateFrom, dateTo);
-        } else if (dateFrom == null && dateTo == null) {
+        } else if (dateFrom == null && dateTo == null && serviceSpecification == null) {
             list = serviceRequestRepository.findCurrent();
-        } else {
+        } else if(dateFrom == null && dateTo == null && serviceSpecification != null){
+            list = serviceRequestRepository.findAllByServiceType(serviceSpecification);
+        }else{
             throw new BadRequestException(BAD_SYNTAX_GET_BY_QUERY);
         }
 

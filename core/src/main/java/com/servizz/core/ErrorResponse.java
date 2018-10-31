@@ -18,7 +18,7 @@ public class ErrorResponse {
 
     public static ResponseEntity<ErrorResponse> get(@NotNull Exception ex, @NotNull HttpStatus httpStatus) {
         String message = Optional.ofNullable(ex.getMessage()).orElse(DEFAULT_ERROR_MSG);
-        return new ResponseEntity<ErrorResponse>(new ErrorResponse(message), httpStatus);
+        return new ResponseEntity<>(new ErrorResponse(message), httpStatus);
     }
 
     public String getMessage() {

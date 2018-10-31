@@ -24,8 +24,8 @@ public class Application implements CommandLineRunner {
     }
 
 
-    public void run(String... args) throws Exception {
-        System.out.println("");
+    public void run(String... args){
+        System.out.println();
         System.out.println("######################################################################");
         System.out.println("###### " + appName + " application started in " + environment + " mode. ##############");
         System.out.println("######################################################################");

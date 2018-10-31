@@ -1,5 +1,7 @@
 package com.servizz.core.service;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 import javax.persistence.*;
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
@@ -26,12 +28,14 @@ public class ServiceRequest implements Serializable {
      * service request valid from
      */
     @Temporal(TemporalType.DATE)
+    @JsonFormat(pattern="dd.MM.yyyy")
     private Date dateFrom;
 
     /**
      * service request valid to
      */
     @Temporal(TemporalType.DATE)
+    @JsonFormat(pattern="dd.MM.yyyy")
     private Date dateTo;
 
     public ServiceRequest() {

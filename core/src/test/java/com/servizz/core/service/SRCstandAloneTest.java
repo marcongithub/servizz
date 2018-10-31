@@ -49,7 +49,7 @@ public class SRCstandAloneTest {
         serviceRequest.setDescription("mocked description");
         Optional<ServiceRequest> optional = Optional.of(serviceRequest);
         given(serviceRequestRepository.findById(anyLong())).willReturn(optional);
-        RequestBuilder requestBuilder = get("/services/{serviceId}", Long.valueOf(1));
+        RequestBuilder requestBuilder = get("/services/{serviceId}",1L);
 
         mvc.perform(requestBuilder);
     }

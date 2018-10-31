@@ -12,6 +12,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static com.servizz.core.service.ServiceRequestTestProvider.*;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -93,6 +94,22 @@ public class ServiceRequestRepositoryTest {
         //find all of current year
         list = underTest.findByDateFromGreaterThanEqualAndDateToLessThanEqual(dateInCurrentYear(1), dateInCurrentYear(12));
         assertThat(list.size()).isEqualTo(7);
+    }
+
+    //TODO: parameterize
+    @Test
+    public void findAllByServiceType() {
+        ServiceRequest.ServiceSpecification serviceSpec = ServiceRequest.ServiceSpecification.PAINTING;
+        List<ServiceRequest> paintingRequestListExpected = serviceRequestsOfOneYear().stream().
+                filter(serviceRequest -> serviceRequest.getServiceType() != null && serviceSpec.equals(serviceRequest.getServiceType())).
+                collect(Collectors.toList());
+        int paintingRequests = paintingRequestListExpected.size();
+        serviceRequestsOfOneYear().forEach((serviceRequest) -> entityManager.persist(serviceRequest));
+        entityManager.flush();
+
+        List<ServiceRequest> paintingRequestList = underTest.findAllByServiceType(serviceSpec);
+        assertThat(paintingRequests).isEqualTo(paintingRequestList.size());
+        assertThat(paintingRequestList.size()).isGreaterThan(0);
     }
 
 

@@ -15,7 +15,7 @@ import java.util.Optional;
 @RestControllerAdvice
 public class ServiceRequestExceptionHandler {
 
-    private Logger logger = LoggerFactory.getLogger(ServiceRequestExceptionHandler.class);
+    private final Logger logger = LoggerFactory.getLogger(ServiceRequestExceptionHandler.class);
 
     @ExceptionHandler(ServiceRequestController.ServiceRequestNotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
@@ -26,9 +26,9 @@ public class ServiceRequestExceptionHandler {
 
     @ExceptionHandler(ServiceRequestController.BadRequestException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ResponseEntity<ErrorResponse> handleBadRequestException(ServiceRequestController.ServiceRequestNotFoundException ex) {
+    public ResponseEntity<ErrorResponse> handleBadRequestException(ServiceRequestController.BadRequestException ex) {
         logger.error(Optional.ofNullable(ex.getMessage()).orElse("Bad request!"));
-        return ErrorResponse.get(ex, HttpStatus.NOT_FOUND);
+        return ErrorResponse.get(ex, HttpStatus.BAD_REQUEST);
     }
 
 }

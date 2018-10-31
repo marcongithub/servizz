@@ -42,16 +42,8 @@ public class SRCfullStackWithH2Test {
     @Autowired
     private ServiceRequestRepository serviceRequestRepository;
 
-
-
-    private Long serviceRequestId;
-
-    @Before
-    public void setUp() {
-    }
-
     @Test
-    public void serviceRequestFound() throws Exception {
+    public void serviceRequestFound() {
         //persist some data
         ServiceRequest serviceRequestExpected = persistServiceRequest();
         Long id = serviceRequestExpected.getId();
@@ -64,7 +56,7 @@ public class SRCfullStackWithH2Test {
     }
 
     @Test
-    public void serviceRequestNotFound() throws Exception {
+    public void serviceRequestNotFound(){
         //when
         ResponseEntity<ServiceRequest> response = this.restTemplate.getForEntity("http://localhost:" + port + "/services/42", ServiceRequest.class);
         //then
@@ -77,7 +69,7 @@ public class SRCfullStackWithH2Test {
     }
 
     @Test
-    public void createServiceRequest() throws Exception {
+    public void createServiceRequest(){
         // when
         ServiceRequest serviceRequest = new ServiceRequest("Test description");
         ResponseEntity<ServiceRequest> response = restTemplate.postForEntity("/services",
@@ -100,7 +92,7 @@ public class SRCfullStackWithH2Test {
         Long id = toUpdate.getId();
 
         ResponseEntity<Void> response =
-                restTemplate.exchange("http://localhost:" + port + "/services/" + id, HttpMethod.PUT, new HttpEntity<ServiceRequest>(toUpdate), Void.class);
+                restTemplate.exchange("http://localhost:" + port + "/services/" + id, HttpMethod.PUT, new HttpEntity<>(toUpdate), Void.class);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         ResponseEntity<ServiceRequest> getResponse = restTemplate.getForEntity("http://localhost:" + port + "/services/" + id, ServiceRequest.class);
         assertThat(getResponse.getBody().getDescription()).isEqualTo(CHANGED_DESCRIPTION);
@@ -111,10 +103,10 @@ public class SRCfullStackWithH2Test {
         ServiceRequest toUpdate = new ServiceRequest("Failing update");
         Field id = ReflectionUtils.findField(ServiceRequest.class, "id");
         ReflectionUtils.makeAccessible(id);
-        ReflectionUtils.setField(id, toUpdate, 4222l);
+        ReflectionUtils.setField(id, toUpdate, 4222L);
 
         ResponseEntity<Void> response =
-                restTemplate.exchange("http://localhost:" + port + "/services/4222", HttpMethod.PUT, new HttpEntity<ServiceRequest>(toUpdate), Void.class);
+                restTemplate.exchange("http://localhost:" + port + "/services/4222", HttpMethod.PUT, new HttpEntity<>(toUpdate), Void.class);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
     }
 
@@ -126,7 +118,7 @@ public class SRCfullStackWithH2Test {
 //        serviceRequestExpected = serviceRequestRepository.save(serviceRequestExpected);
 
 
-        serviceRequestId = serviceRequestExpected.getId();
+        Long serviceRequestId = serviceRequestExpected.getId();
         return serviceRequestExpected;
     }
 

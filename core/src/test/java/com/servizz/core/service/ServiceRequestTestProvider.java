@@ -8,15 +8,16 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class ServiceRequestTestProvider {
+class ServiceRequestTestProvider {
 
     public static final String SERVICE_REQUEST_DESCRIPTION = "service request-";
 
-    static ServiceRequest serviceRequest(int monthFrom, int monthTo, int index){
+    private static ServiceRequest serviceRequest(int monthFrom, int monthTo, int index, ServiceRequest.ServiceSpecification serviceType) {
         assertThat(monthTo).isLessThan(13);
-        ServiceRequest serviceRequest = serviceRequest(monthFrom,index);
+        ServiceRequest serviceRequest = serviceRequest(monthFrom, index);
         //overwrite default
         serviceRequest.setDateTo(dateInCurrentYear(monthTo));
+        serviceRequest.setServiceType(serviceType);
         return serviceRequest;
     }
 
@@ -46,19 +47,19 @@ public class ServiceRequestTestProvider {
         return serviceRequest;
     }
 
-    static List<ServiceRequest> serviceRequestsOfOneYear(){
+    static List<ServiceRequest> serviceRequestsOfOneYear() {
         ArrayList<ServiceRequest> requestsOfOneYear = new ArrayList<>();
         //q1
-        requestsOfOneYear.add(serviceRequest(1, 1, 11));
-        requestsOfOneYear.add(serviceRequest(1, 2, 12));
-        requestsOfOneYear.add(serviceRequest(2, 3, 13));
+        requestsOfOneYear.add(serviceRequest(1, 1, 11, ServiceRequest.ServiceSpecification.NATIONAL_RELOCATION));
+        requestsOfOneYear.add(serviceRequest(1, 2, 12, ServiceRequest.ServiceSpecification.GARDEN_CLEANING));
+        requestsOfOneYear.add(serviceRequest(2, 3, 13, ServiceRequest.ServiceSpecification.HOUSE_CLEANING));
         //q2
-        requestsOfOneYear.add(serviceRequest(4, 5, 21));
+        requestsOfOneYear.add(serviceRequest(4, 5, 21, ServiceRequest.ServiceSpecification.INTERNATIONAL_RELOCATION));
         //q3
-        requestsOfOneYear.add(serviceRequest(8, 8, 31));
-        requestsOfOneYear.add(serviceRequest(6, 9, 32));
+        requestsOfOneYear.add(serviceRequest(8, 8, 31, ServiceRequest.ServiceSpecification.PAINTING));
+        requestsOfOneYear.add(serviceRequest(6, 9, 32, ServiceRequest.ServiceSpecification.HOUSE_CLEANING));
         //q4
-        requestsOfOneYear.add(serviceRequest(10, 12, 41));
+        requestsOfOneYear.add(serviceRequest(10, 12, 41, ServiceRequest.ServiceSpecification.PAINTING));
 
         return requestsOfOneYear;
     }
